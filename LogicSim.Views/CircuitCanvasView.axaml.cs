@@ -14,7 +14,10 @@ public partial class CircuitCanvasView : UserControl
 {
     private GateViewModel? _draggedGate;
     private CircuitCanvasViewModel? _viewModel;
-    private Line? _previewLine;
+    private List<Line> _previewLines = new();
+    private BendPoint? _draggedBendPoint;
+    private double _bendPointDragOffsetX;
+    private double _bendPointDragOffsetY;
     
     public CircuitCanvasView()
     {
@@ -168,44 +171,145 @@ public partial class CircuitCanvasView : UserControl
     
     private void AddWireToCanvas(WireViewModel wireViewModel)
     {
-        var line = new Line
-        {
-            StartPoint = new Avalonia.Point(wireViewModel.StartX, wireViewModel.StartY),
-            EndPoint = new Avalonia.Point(wireViewModel.EndX, wireViewModel.EndY),
-            Stroke = new SolidColorBrush(Color.Parse(wireViewModel.DisplayColor)),
-            StrokeThickness = 2,
-            Tag = wireViewModel // Store reference for removal
-        };
+        // Subscribe to segments collection changes
+        wireViewModel.Segments.CollectionChanged += (s, e) => UpdateWireSegments(wireViewModel);
+        wireViewModel.BendPoints.CollectionChanged += (s, e) => UpdateWireBendPoints(wireViewModel);
         
-        // Subscribe to wire position changes
-        wireViewModel.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(WireViewModel.StartX) || e.PropertyName == nameof(WireViewModel.StartY))
-            {
-                line.StartPoint = new Avalonia.Point(wireViewModel.StartX, wireViewModel.StartY);
-            }
-            else if (e.PropertyName == nameof(WireViewModel.EndX) || e.PropertyName == nameof(WireViewModel.EndY))
-            {
-                line.EndPoint = new Avalonia.Point(wireViewModel.EndX, wireViewModel.EndY);
-            }
-        };
+        // Add initial segments and bend points
+        UpdateWireSegments(wireViewModel);
+        UpdateWireBendPoints(wireViewModel);
         
-        // Add wire line at the beginning so it renders behind gates
-        CircuitCanvas.Children.Insert(0, line);
-        System.Diagnostics.Debug.WriteLine($"Wire added to canvas: {wireViewModel.StartPin?.Name} -> {wireViewModel.EndPin?.Name}");
+        System.Diagnostics.Debug.WriteLine($"Wire added to canvas: {wireViewModel.StartPin?.Name} -> {wireViewModel.EndPin?.Name} with {wireViewModel.Segments.Count} segments");
+    }
+    
+    private void UpdateWireSegments(WireViewModel wireViewModel)
+    {
+        // Remove existing segment lines for this wire
+        var existingSegments = CircuitCanvas.Children
+            .OfType<Line>()
+            .Where(l => l.Tag is WireSegmentTag tag && tag.WireViewModel == wireViewModel)
+            .ToList();
+            
+        foreach (var segment in existingSegments)
+        {
+            CircuitCanvas.Children.Remove(segment);
+        }
+        
+        // Add new segment lines
+        foreach (var segment in wireViewModel.Segments)
+        {
+            var line = new Line
+            {
+                StartPoint = new Avalonia.Point(segment.StartX, segment.StartY),
+                EndPoint = new Avalonia.Point(segment.EndX, segment.EndY),
+                Stroke = new SolidColorBrush(Color.Parse(wireViewModel.DisplayColor)),
+                StrokeThickness = 2,
+                Tag = new WireSegmentTag { WireViewModel = wireViewModel, Segment = segment }
+            };
+            
+            // Subscribe to segment position changes
+            segment.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(WireSegment.StartX) || e.PropertyName == nameof(WireSegment.StartY))
+                {
+                    line.StartPoint = new Avalonia.Point(segment.StartX, segment.StartY);
+                }
+                else if (e.PropertyName == nameof(WireSegment.EndX) || e.PropertyName == nameof(WireSegment.EndY))
+                {
+                    line.EndPoint = new Avalonia.Point(segment.EndX, segment.EndY);
+                }
+            };
+            
+            // Add segment line at the beginning so it renders behind gates
+            CircuitCanvas.Children.Insert(0, line);
+        }
+    }
+    
+    private void UpdateWireBendPoints(WireViewModel wireViewModel)
+    {
+        // Remove existing bend point circles for this wire
+        var existingBendPoints = CircuitCanvas.Children
+            .OfType<Ellipse>()
+            .Where(e => e.Tag is BendPointTag tag && tag.WireViewModel == wireViewModel)
+            .ToList();
+            
+        foreach (var bendPoint in existingBendPoints)
+        {
+            CircuitCanvas.Children.Remove(bendPoint);
+        }
+        
+        // Add new bend point circles
+        foreach (var bendPoint in wireViewModel.BendPoints)
+        {
+            var circle = new Ellipse
+            {
+                Width = 8,
+                Height = 8,
+                Fill = new SolidColorBrush(Color.Parse(bendPoint.DisplayColor)),
+                Stroke = new SolidColorBrush(Color.Parse("#000000")),
+                StrokeThickness = 1,
+                Cursor = new Cursor(StandardCursorType.Hand),
+                Tag = new BendPointTag { WireViewModel = wireViewModel, BendPoint = bendPoint }
+            };
+            
+            // Add bend point event handlers
+            circle.PointerPressed += OnBendPointPointerPressed;
+            circle.PointerMoved += OnBendPointPointerMoved;
+            circle.PointerReleased += OnBendPointPointerReleased;
+            circle.PointerEntered += OnBendPointPointerEntered;
+            circle.PointerExited += OnBendPointPointerExited;
+            
+            // Position the circle
+            Canvas.SetLeft(circle, bendPoint.X - 4); // Center the 8px circle
+            Canvas.SetTop(circle, bendPoint.Y - 4);
+            
+            // Subscribe to bend point position changes
+            bendPoint.PropertyChanged += (s, e) =>
+            {
+                if (e.PropertyName == nameof(BendPoint.X))
+                {
+                    Canvas.SetLeft(circle, bendPoint.X - 4);
+                }
+                else if (e.PropertyName == nameof(BendPoint.Y))
+                {
+                    Canvas.SetTop(circle, bendPoint.Y - 4);
+                }
+                else if (e.PropertyName == nameof(BendPoint.DisplayColor))
+                {
+                    circle.Fill = new SolidColorBrush(Color.Parse(bendPoint.DisplayColor));
+                }
+            };
+            
+            // Add bend point circle above wires but below gates
+            CircuitCanvas.Children.Add(circle);
+        }
     }
     
     private void RemoveWireFromCanvas(WireViewModel wireViewModel)
     {
-        var line = CircuitCanvas.Children
+        // Remove all segment lines for this wire
+        var segmentLines = CircuitCanvas.Children
             .OfType<Line>()
-            .FirstOrDefault(l => l.Tag == wireViewModel);
-        
-        if (line != null)
+            .Where(l => l.Tag is WireSegmentTag tag && tag.WireViewModel == wireViewModel)
+            .ToList();
+            
+        foreach (var line in segmentLines)
         {
             CircuitCanvas.Children.Remove(line);
-            System.Diagnostics.Debug.WriteLine($"Wire removed from canvas: {wireViewModel.StartPin?.Name} -> {wireViewModel.EndPin?.Name}");
         }
+        
+        // Remove all bend point circles for this wire
+        var bendPointCircles = CircuitCanvas.Children
+            .OfType<Ellipse>()
+            .Where(e => e.Tag is BendPointTag tag && tag.WireViewModel == wireViewModel)
+            .ToList();
+            
+        foreach (var circle in bendPointCircles)
+        {
+            CircuitCanvas.Children.Remove(circle);
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"Wire removed from canvas: {wireViewModel.StartPin?.Name} -> {wireViewModel.EndPin?.Name}");
     }
     
     private void OnGatePointerPressed(object? sender, PointerPressedEventArgs e)
@@ -303,19 +407,14 @@ public partial class CircuitCanvasView : UserControl
     {
         if (_viewModel == null || !_viewModel.IsWiring || _viewModel.WireSourcePin == null) return;
         
-        if (_previewLine == null)
+        // Remove existing preview lines
+        foreach (var line in _previewLines)
         {
-            _previewLine = new Line
-            {
-                Stroke = new SolidColorBrush(Color.Parse("#FFD700")), // Gold color
-                StrokeThickness = 2,
-                StrokeDashArray = new AvaloniaList<double> { 5, 5 }, // Dotted line
-                IsHitTestVisible = false // Don't interfere with mouse events
-            };
-            CircuitCanvas.Children.Add(_previewLine);
+            CircuitCanvas.Children.Remove(line);
         }
+        _previewLines.Clear();
         
-        // Calculate start position from source pin - need to find the gate containing this pin
+        // Calculate start position from source pin
         var sourcePin = _viewModel.WireSourcePin;
         var sourceGate = _viewModel.FindGateContainingPin(sourcePin);
         
@@ -323,18 +422,149 @@ public partial class CircuitCanvasView : UserControl
         {
             var startX = sourceGate.X + sourcePin.RelativeX + 6; // Center of pin
             var startY = sourceGate.Y + sourcePin.RelativeY + 6;
+            var endX = _viewModel.PreviewEndX;
+            var endY = _viewModel.PreviewEndY;
             
-            _previewLine.StartPoint = new Avalonia.Point(startX, startY);
-            _previewLine.EndPoint = new Avalonia.Point(_viewModel.PreviewEndX, _viewModel.PreviewEndY);
+            // Calculate 3-segment preview routing
+            CalculatePreviewRouting(startX, startY, endX, endY);
+        }
+    }
+    
+    private void CalculatePreviewRouting(double startX, double startY, double endX, double endY)
+    {
+        var deltaX = endX - startX;
+        var deltaY = endY - startY;
+        
+        List<(double x1, double y1, double x2, double y2)> segments;
+        
+        // Choose routing pattern based on which delta is larger
+        if (Math.Abs(deltaX) > Math.Abs(deltaY))
+        {
+            // H-V-H pattern
+            var midX = (startX + endX) / 2;
+            segments = new List<(double, double, double, double)>
+            {
+                (startX, startY, midX, startY), // Horizontal
+                (midX, startY, midX, endY),     // Vertical  
+                (midX, endY, endX, endY)        // Horizontal
+            };
+        }
+        else
+        {
+            // V-H-V pattern
+            var midY = (startY + endY) / 2;
+            segments = new List<(double, double, double, double)>
+            {
+                (startX, startY, startX, midY), // Vertical
+                (startX, midY, endX, midY),     // Horizontal
+                (endX, midY, endX, endY)        // Vertical
+            };
+        }
+        
+        // Create preview line segments
+        foreach (var (x1, y1, x2, y2) in segments)
+        {
+            var line = new Line
+            {
+                StartPoint = new Avalonia.Point(x1, y1),
+                EndPoint = new Avalonia.Point(x2, y2),
+                Stroke = new SolidColorBrush(Color.Parse("#FFD700")), // Gold color
+                StrokeThickness = 2,
+                StrokeDashArray = new AvaloniaList<double> { 5, 5 }, // Dotted line
+                IsHitTestVisible = false // Don't interfere with mouse events
+            };
+            
+            _previewLines.Add(line);
+            CircuitCanvas.Children.Add(line);
         }
     }
     
     private void HidePreviewLine()
     {
-        if (_previewLine != null)
+        foreach (var line in _previewLines)
         {
-            CircuitCanvas.Children.Remove(_previewLine);
-            _previewLine = null;
+            CircuitCanvas.Children.Remove(line);
+        }
+        _previewLines.Clear();
+    }
+    
+    private void OnBendPointPointerPressed(object? sender, PointerPressedEventArgs e)
+    {
+        if (sender is Ellipse circle && circle.Tag is BendPointTag tag)
+        {
+            _draggedBendPoint = tag.BendPoint;
+            if (_draggedBendPoint != null)
+            {
+                var point = e.GetPosition(CircuitCanvas);
+                _bendPointDragOffsetX = point.X - _draggedBendPoint.X;
+                _bendPointDragOffsetY = point.Y - _draggedBendPoint.Y;
+                _draggedBendPoint.IsDragging = true;
+                e.Pointer.Capture(circle);
+                e.Handled = true;
+                
+                System.Diagnostics.Debug.WriteLine($"Started dragging bend point at ({_draggedBendPoint.X:F0}, {_draggedBendPoint.Y:F0})");
+            }
         }
     }
+    
+    private void OnBendPointPointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (_draggedBendPoint != null && _draggedBendPoint.IsDragging)
+        {
+            var point = e.GetPosition(CircuitCanvas);
+            var newX = point.X - _bendPointDragOffsetX;
+            var newY = point.Y - _bendPointDragOffsetY;
+            
+            // Simple unconstrained movement - user can move bend points anywhere
+            _draggedBendPoint.MoveTo(newX, newY);
+            
+            e.Handled = true;
+        }
+    }
+    
+    private void OnBendPointPointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        if (_draggedBendPoint != null)
+        {
+            _draggedBendPoint.IsDragging = false;
+            System.Diagnostics.Debug.WriteLine($"Finished dragging bend point to ({_draggedBendPoint.X:F0}, {_draggedBendPoint.Y:F0})");
+            _draggedBendPoint = null;
+            
+            if (sender is Control control)
+            {
+                e.Pointer.Capture(null);
+            }
+            e.Handled = true;
+        }
+    }
+    
+    private void OnBendPointPointerEntered(object? sender, PointerEventArgs e)
+    {
+        if (sender is Ellipse circle && circle.Tag is BendPointTag tag && tag.BendPoint != null)
+        {
+            tag.BendPoint.IsHovered = true;
+        }
+    }
+    
+    private void OnBendPointPointerExited(object? sender, PointerEventArgs e)
+    {
+        if (sender is Ellipse circle && circle.Tag is BendPointTag tag && tag.BendPoint != null)
+        {
+            tag.BendPoint.IsHovered = false;
+        }
+    }
+    
+}
+
+// Tag classes for identifying canvas elements
+public class WireSegmentTag
+{
+    public WireViewModel? WireViewModel { get; set; }
+    public WireSegment? Segment { get; set; }
+}
+
+public class BendPointTag
+{
+    public WireViewModel? WireViewModel { get; set; }
+    public BendPoint? BendPoint { get; set; }
 }
