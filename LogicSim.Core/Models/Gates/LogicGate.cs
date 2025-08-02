@@ -1,4 +1,5 @@
 using LogicSim.Core.Models;
+using LogicSim.Core.Utilities;
 
 namespace LogicSim.Core.Models.Gates;
 
@@ -49,24 +50,59 @@ public class LogicGate : BaseModel
     
     public void UpdatePinPositions()
     {
+        const double gateBodyOffsetX = 10; // Gate body starts at Canvas.Left="10"
+        const double gateBodyOffsetY = 10; // Gate body starts at Canvas.Top="10"
         const double gateWidth = 80;
-        const double gateHeight = 50;
+        const double gateHeight = 40;
         const double pinRadius = 6; // Half of pin width (12px)
         
-        // Position input pins on left edge (centered on border)
+        // Position input pins on left edge of gate body
+        // Pin positions are relative to the gate canvas (not gate body)
         for (int i = 0; i < InputPins.Count; i++)
         {
             var pin = InputPins[i];
-            pin.X = -pinRadius; // Center pin on gate left edge
-            pin.Y = gateHeight * (i + 1) / (InputPins.Count + 1) - pinRadius; // Center pin on calculated Y
+            // Position at left edge of gate body
+            pin.X = gateBodyOffsetX - pinRadius; // 10 - 6 = 4 (pin center at x=10)
+            
+            // Grid-aligned Y positions based on pin count
+            if (InputPins.Count == 1)
+            {
+                // Center single pin in gate body
+                pin.Y = gateBodyOffsetY + (gateHeight / 2) - pinRadius; // 10 + 20 - 6 = 24
+            }
+            else if (InputPins.Count == 2)
+            {
+                // Two pins at 1/3 and 2/3 of gate height
+                // For clean 10px grid alignment
+                pin.Y = gateBodyOffsetY + ((i == 0) ? 10 : 30) - pinRadius; // Results in Y=14 or Y=34
+            }
+            else
+            {
+                // For more pins, distribute evenly
+                double spacing = gateHeight / (InputPins.Count + 1);
+                pin.Y = gateBodyOffsetY + GridHelper.SnapToGrid(spacing * (i + 1)) - pinRadius;
+            }
         }
         
-        // Position output pins on right edge (centered on border)
+        // Position output pins on right edge of gate body
         for (int i = 0; i < OutputPins.Count; i++)
         {
             var pin = OutputPins[i];
-            pin.X = gateWidth - pinRadius; // Center pin on gate right edge
-            pin.Y = gateHeight * (i + 1) / (OutputPins.Count + 1) - pinRadius; // Center pin on calculated Y
+            // Position at right edge of gate body
+            pin.X = gateBodyOffsetX + gateWidth - pinRadius; // 10 + 80 - 6 = 84 (pin center at x=90)
+            
+            // Grid-aligned Y positions based on pin count
+            if (OutputPins.Count == 1)
+            {
+                // Center single pin in gate body
+                pin.Y = gateBodyOffsetY + (gateHeight / 2) - pinRadius; // 10 + 20 - 6 = 24
+            }
+            else
+            {
+                // For multiple pins, distribute evenly
+                double spacing = gateHeight / (OutputPins.Count + 1);
+                pin.Y = gateBodyOffsetY + GridHelper.SnapToGrid(spacing * (i + 1)) - pinRadius;
+            }
         }
     }
 }

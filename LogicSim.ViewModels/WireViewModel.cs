@@ -1,5 +1,6 @@
 using ReactiveUI;
 using LogicSim.Core.Models;
+using LogicSim.Core.Utilities;
 using System.Collections.ObjectModel;
 
 namespace LogicSim.ViewModels;
@@ -188,9 +189,10 @@ public class WireViewModel : ViewModelBase
     private void CalculateHVHRouting()
     {
         // H-V-H: horizontal to middle, vertical to align, horizontal to end
-        var midX = (StartX + EndX) / 2;
+        // Snap the middle X position to grid for clean alignment
+        var midX = GridHelper.SnapToGrid((StartX + EndX) / 2);
         
-        // Create bend points
+        // Create bend points at grid-aligned positions
         var bendPoint1 = new BendPoint(midX, StartY);
         var bendPoint2 = new BendPoint(midX, EndY);
         
@@ -218,9 +220,10 @@ public class WireViewModel : ViewModelBase
     private void CalculateVHVRouting()
     {
         // V-H-V: vertical to middle, horizontal to align, vertical to end
-        var midY = (StartY + EndY) / 2;
+        // Snap the middle Y position to grid for clean alignment
+        var midY = GridHelper.SnapToGrid((StartY + EndY) / 2);
         
-        // Create bend points
+        // Create bend points at grid-aligned positions
         var bendPoint1 = new BendPoint(StartX, midY);
         var bendPoint2 = new BendPoint(EndX, midY);
         

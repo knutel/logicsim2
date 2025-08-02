@@ -50,8 +50,8 @@ public class PinViewModel : ViewModelBase
     }
     
     // Relative coordinates for positioning within GateView
-    public double RelativeX => X + 10; // Offset by gate body position (Canvas.Left="10")
-    public double RelativeY => Y + 5;  // Offset by gate body position (Canvas.Top="5")
+    public double RelativeX => X; // X already includes positioning
+    public double RelativeY => Y;  // Y already includes positioning
     
     public bool IsHovered
     {

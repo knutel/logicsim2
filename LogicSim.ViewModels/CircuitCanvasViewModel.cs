@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using ReactiveUI;
 using LogicSim.Core.Models.Gates;
 using LogicSim.Core.Models;
+using LogicSim.Core.Utilities;
 
 namespace LogicSim.ViewModels;
 
@@ -78,10 +79,11 @@ public class CircuitCanvasViewModel : ViewModelBase
     
     public (double X, double Y) GetNextGatePosition()
     {
-        const double startX = 250;
-        const double startY = 50;
-        const double gateWidth = 100;
-        const double gateHeight = 70;
+        // Grid-aligned gate positioning with 10px grid
+        const double startX = 250; // 25 grid units from left edge
+        const double startY = 50;  // 5 grid units from top edge
+        const double gateSpacingX = 110; // 11 grid units horizontal spacing (100px gate + 10px gap)
+        const double gateSpacingY = 70;  // 7 grid units vertical spacing (60px gate + 10px gap)
         const int gatesPerRow = 6;
         
         int row = _gateCounter / gatesPerRow;
@@ -89,7 +91,11 @@ public class CircuitCanvasViewModel : ViewModelBase
         
         _gateCounter++;
         
-        return (startX + col * gateWidth, startY + row * gateHeight);
+        // Ensure positions are grid-aligned
+        var x = GridHelper.SnapToGrid(startX + col * gateSpacingX);
+        var y = GridHelper.SnapToGrid(startY + row * gateSpacingY);
+        
+        return (x, y);
     }
     
     public void StartWire(PinViewModel sourcePin)

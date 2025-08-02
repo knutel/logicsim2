@@ -6,6 +6,7 @@ using Avalonia.LogicalTree;
 using Avalonia.Collections;
 using LogicSim.ViewModels;
 using LogicSim.Views.Controls;
+using LogicSim.Core.Utilities;
 using System.Collections.Specialized;
 
 namespace LogicSim.Views;
@@ -515,8 +516,9 @@ public partial class CircuitCanvasView : UserControl
             var newX = point.X - _bendPointDragOffsetX;
             var newY = point.Y - _bendPointDragOffsetY;
             
-            // Simple unconstrained movement - user can move bend points anywhere
-            _draggedBendPoint.MoveTo(newX, newY);
+            // Snap bend point position to grid during drag
+            var snappedPosition = GridHelper.SnapPoint(newX, newY);
+            _draggedBendPoint.MoveTo(snappedPosition.X, snappedPosition.Y);
             
             e.Handled = true;
         }

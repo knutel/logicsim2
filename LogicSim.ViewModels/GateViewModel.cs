@@ -1,5 +1,6 @@
 using ReactiveUI;
 using LogicSim.Core.Models.Gates;
+using LogicSim.Core.Utilities;
 using System.Collections.ObjectModel;
 
 namespace LogicSim.ViewModels;
@@ -105,6 +106,7 @@ public class GateViewModel : ViewModelBase
     {
         if (IsDragging)
         {
+            // Update position during drag without snapping for smooth movement
             X = pointerX - DragOffsetX;
             Y = pointerY - DragOffsetY;
         }
@@ -112,7 +114,15 @@ public class GateViewModel : ViewModelBase
     
     public void EndDrag()
     {
-        IsDragging = false;
+        if (IsDragging)
+        {
+            // Snap to grid when drag ends
+            var snappedPosition = GridHelper.SnapPoint(X, Y);
+            X = snappedPosition.X;
+            Y = snappedPosition.Y;
+            
+            IsDragging = false;
+        }
     }
     
     private void UpdatePinPositions()

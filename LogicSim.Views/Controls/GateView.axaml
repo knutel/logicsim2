@@ -8,15 +8,15 @@
              x:Class="LogicSim.Views.Controls.GateView"
              x:DataType="vm:GateViewModel">
     
-    <Canvas Width="120" Height="60">
+    <Canvas Width="100" Height="60">
         <!-- Gate Body -->
-        <Border Canvas.Left="10" Canvas.Top="5"
+        <Border Canvas.Left="10" Canvas.Top="10"
                 Background="#2D3142"
                 BorderBrush="#4F5D75"
                 BorderThickness="2"
                 CornerRadius="5"
                 Width="80"
-                Height="50"
+                Height="40"
                 Cursor="Hand">
             
             <Grid>
