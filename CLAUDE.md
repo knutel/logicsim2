@@ -14,6 +14,9 @@ dotnet run --project LogicSim.Desktop
 
 # Build specific project
 dotnet build LogicSim.Core
+
+# Run tests (when added)
+dotnet test
 ```
 
 ### Project Structure Commands
@@ -83,6 +86,18 @@ The `CircuitCanvasView` manually manages Canvas children rather than using Items
 - `MainWindowViewModel` owns both `CanvasViewModel` and `ToolboxViewModel`
 - `ToolboxViewModel` receives `CanvasViewModel` reference to call `AddGate()`
 - `CircuitCanvasViewModel.GetNextGatePosition()` provides automatic grid positioning
+
+## Testing Strategy
+- Domain logic: Pure unit tests (no UI)
+- ViewModels: Test property changes, command execution
+- No UI testing initially
+
+## Avoid
+- Direct UI manipulation from domain
+- WPF-specific patterns
+- Blocking operations on UI thread
+- Manual property change notifications (use ReactiveUI)
+- Business logic in ViewModels
 
 ## Development Philosophy
 
