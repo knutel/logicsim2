@@ -1,25 +1,19 @@
 using ReactiveUI;
-using System.Reactive;
 
 namespace LogicSim.ViewModels;
 
 public class MainWindowViewModel : ViewModelBase
 {
-    private string _greeting = "Welcome to LogicSim!";
-    
-    public string Greeting
-    {
-        get => _greeting;
-        set => this.RaiseAndSetIfChanged(ref _greeting, value);
-    }
-    
-    public ReactiveCommand<Unit, Unit> TestCommand { get; }
+    private CircuitCanvasViewModel _canvasViewModel;
     
     public MainWindowViewModel()
     {
-        TestCommand = ReactiveCommand.Create(() =>
-        {
-            Greeting = "Button clicked!";
-        });
+        _canvasViewModel = new CircuitCanvasViewModel();
+    }
+    
+    public CircuitCanvasViewModel CanvasViewModel
+    {
+        get => _canvasViewModel;
+        set => this.RaiseAndSetIfChanged(ref _canvasViewModel, value);
     }
 }
