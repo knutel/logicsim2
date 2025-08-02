@@ -1,5 +1,9 @@
 # LogicSim - Digital Logic Simulator
 
+> [!CAUTION]
+> This is an experiment to see what Claude Code can do. This is my second attempt. The first one got way too vibe-y and starting to break under its own weight. My intention this time is to keep a bit shorter leash on CC by giving more details and not accepting crappy code. Commits labeled as co-authored by Claude are entirely Claude’s work, while those without that label are mine.
+> Almost all demonstrations of AI coding, or vibe coding, are doing trivial ToDo apps or the like. This is an attempt at doing something useful instead.
+
 A .NET 8 Avalonia application using MVVM pattern with ReactiveUI for building digital logic circuits.
 
 ## Solution Structure
