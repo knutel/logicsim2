@@ -1,0 +1,158 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:LogicSim.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="600"
+             x:Class="LogicSim.Views.ToolboxView"
+             x:DataType="vm:ToolboxViewModel">
+    
+    <Border Background="#2D3142" BorderBrush="#4F5D75" BorderThickness="0,0,1,0">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel Margin="10" Spacing="8">
+                
+                <TextBlock Text="Logic Gates" 
+                           FontSize="16" 
+                           FontWeight="Bold" 
+                           Foreground="White" 
+                           Margin="0,0,0,10"/>
+                
+                <Button Command="{Binding AddAndGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="&amp;" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"/>
+                        </Border>
+                        <TextBlock Text="AND Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding AddOrGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="≥1" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"
+                                       FontSize="10"/>
+                        </Border>
+                        <TextBlock Text="OR Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding AddNotGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="1" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"/>
+                        </Border>
+                        <TextBlock Text="NOT Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding AddXorGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="=1" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"
+                                       FontSize="10"/>
+                        </Border>
+                        <TextBlock Text="XOR Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding AddNandGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="&amp;" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"/>
+                        </Border>
+                        <TextBlock Text="NAND Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+                <Button Command="{Binding AddNorGateCommand}" 
+                        Width="160" Height="40"
+                        HorizontalContentAlignment="Left"
+                        Background="#4F5D75"
+                        BorderBrush="#6C7B87"
+                        BorderThickness="1">
+                    <StackPanel Orientation="Horizontal" Spacing="10">
+                        <Border Background="#3E4E5E" 
+                                Width="30" Height="20" 
+                                CornerRadius="3">
+                            <TextBlock Text="≥1" 
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center" 
+                                       Foreground="White" 
+                                       FontWeight="Bold"
+                                       FontSize="10"/>
+                        </Border>
+                        <TextBlock Text="NOR Gate" 
+                                   VerticalAlignment="Center" 
+                                   Foreground="White"/>
+                    </StackPanel>
+                </Button>
+                
+            </StackPanel>
+        </ScrollViewer>
+    </Border>
+</UserControl>

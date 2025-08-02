@@ -7,14 +7,11 @@ namespace LogicSim.ViewModels;
 public class CircuitCanvasViewModel : ViewModelBase
 {
     private ObservableCollection<GateViewModel> _gates;
+    private int _gateCounter = 0;
     
     public CircuitCanvasViewModel()
     {
         _gates = new ObservableCollection<GateViewModel>();
-        
-        // Add a sample AND gate to start with
-        var andGate = new LogicGate(GateType.And, 100, 100);
-        _gates.Add(new GateViewModel(andGate));
     }
     
     public ObservableCollection<GateViewModel> Gates
@@ -27,5 +24,21 @@ public class CircuitCanvasViewModel : ViewModelBase
     {
         var gate = new LogicGate(type, x, y);
         Gates.Add(new GateViewModel(gate));
+    }
+    
+    public (double X, double Y) GetNextGatePosition()
+    {
+        const double startX = 250;
+        const double startY = 50;
+        const double gateWidth = 100;
+        const double gateHeight = 70;
+        const int gatesPerRow = 6;
+        
+        int row = _gateCounter / gatesPerRow;
+        int col = _gateCounter % gatesPerRow;
+        
+        _gateCounter++;
+        
+        return (startX + col * gateWidth, startY + row * gateHeight);
     }
 }

@@ -21,13 +21,20 @@
                        Foreground="White"/>
         </Border>
         
-        <!-- Main Content Area - Circuit Canvas -->
-        <views:CircuitCanvasView Grid.Row="1" 
-                                 DataContext="{Binding CanvasViewModel}"/>
+        <!-- Main Content Area - Toolbox and Canvas -->
+        <Grid Grid.Row="1" ColumnDefinitions="200,*">
+            <!-- Toolbox -->
+            <views:ToolboxView Grid.Column="0" 
+                               DataContext="{Binding ToolboxViewModel}"/>
+            
+            <!-- Circuit Canvas -->
+            <views:CircuitCanvasView Grid.Column="1" 
+                                     DataContext="{Binding CanvasViewModel}"/>
+        </Grid>
         
         <!-- Status Bar -->
         <Border Grid.Row="2" Background="#2D3142" Height="25">
-            <TextBlock Text="Drag the AND gate to move it around the canvas" 
+            <TextBlock Text="Click gate buttons in the toolbox to add new gates to the canvas" 
                        FontSize="12" 
                        VerticalAlignment="Center"
                        Margin="10,0"
