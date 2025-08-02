@@ -7,7 +7,7 @@
              x:Class="LogicSim.Views.Controls.PinView"
              x:DataType="vm:PinViewModel">
     
-    <Ellipse Width="12" Height="12"
+    <Ellipse x:Name="PinEllipse" Width="12" Height="12"
              Fill="{Binding DisplayColor}"
              Stroke="#000000"
              StrokeThickness="2"

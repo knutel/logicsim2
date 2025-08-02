@@ -10,6 +10,8 @@ public class PinViewModel : ViewModelBase
     private double _y;
     private bool _isHovered;
     private bool _isConnected;
+    private bool _isWireSource;
+    private bool _isWireTarget;
     
     public PinViewModel(Pin pin)
     {
@@ -68,9 +70,38 @@ public class PinViewModel : ViewModelBase
         }
     }
     
-    public string DisplayColor => Direction == PinDirection.Input 
-        ? "#00FF00"  // Bright green for input pins (debug)
-        : "#FF0000"; // Bright red for output pins (debug)
+    public bool IsWireSource
+    {
+        get => _isWireSource;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isWireSource, value);
+            this.RaisePropertyChanged(nameof(DisplayColor));
+        }
+    }
+    
+    public bool IsWireTarget
+    {
+        get => _isWireTarget;
+        set
+        {
+            this.RaiseAndSetIfChanged(ref _isWireTarget, value);
+            this.RaisePropertyChanged(nameof(DisplayColor));
+        }
+    }
+    
+    public string DisplayColor
+    {
+        get
+        {
+            if (IsWireSource) return "#FFD700"; // Gold for wire source
+            if (IsWireTarget) return "#32CD32"; // Lime green for wire target
+            
+            return Direction == PinDirection.Input 
+                ? "#00FF00"  // Bright green for input pins (debug)
+                : "#FF0000"; // Bright red for output pins (debug)
+        }
+    }
     
     public string HoverColor => Direction == PinDirection.Input ? "#3A7BC8" : "#C23A3A";
 }

@@ -10,6 +10,6 @@ public class Connection : BaseModel
     {
         OutputPinId = outputPinId;
         InputPinId = inputPinId;
-        Name = $"Connection {Id:N[..8]}";
+        Name = $"Connection {Id.ToString("N")[..8]}";
     }
 }
