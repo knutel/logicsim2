@@ -248,19 +248,80 @@ public class WireViewModel : ViewModelBase
         System.Diagnostics.Debug.WriteLine($"V-H-V routing: Start({StartX:F0},{StartY:F0}) -> Mid({midY:F0}) -> End({EndX:F0},{EndY:F0})");
     }
     
+    public void AddBendPoint(double x, double y, int afterIndex)
+    {
+        // Snap position to grid
+        var snappedPos = GridHelper.SnapPoint(x, y);
+        
+        // Create new bend point
+        var newBendPoint = new BendPoint(snappedPos.X, snappedPos.Y);
+        
+        // Subscribe to bend point changes
+        newBendPoint.PropertyChanged += (s, e) => {
+            if (e.PropertyName == nameof(BendPoint.X) || e.PropertyName == nameof(BendPoint.Y))
+                RecalculateSegments();
+        };
+        
+        // Insert at correct position
+        if (afterIndex < 0)
+        {
+            _bendPoints.Insert(0, newBendPoint);
+        }
+        else if (afterIndex >= _bendPoints.Count - 1)
+        {
+            _bendPoints.Add(newBendPoint);
+        }
+        else
+        {
+            _bendPoints.Insert(afterIndex + 1, newBendPoint);
+        }
+        
+        System.Diagnostics.Debug.WriteLine($"Added bend point at ({snappedPos.X:F0}, {snappedPos.Y:F0}) after index {afterIndex}");
+        
+        // Recalculate all segments
+        RecalculateSegments();
+    }
+    
+    public void RemoveBendPoint(BendPoint bendPoint)
+    {
+        // Keep minimum of 2 bend points for basic routing
+        if (_bendPoints.Count <= 2) 
+        {
+            System.Diagnostics.Debug.WriteLine("Cannot remove bend point - minimum of 2 required");
+            return;
+        }
+        
+        _bendPoints.Remove(bendPoint);
+        System.Diagnostics.Debug.WriteLine($"Removed bend point at ({bendPoint.X:F0}, {bendPoint.Y:F0})");
+        RecalculateSegments();
+    }
+    
     private void RecalculateSegments()
     {
-        if (_bendPoints.Count == 2 && _segments.Count == 3)
+        if (_bendPoints.Count < 2) return; // Need at least 2 bend points
+        
+        // Clear existing segments
+        _segments.Clear();
+        
+        // First segment: start to first bend point
+        var firstSegment = new WireSegment(StartX, StartY, _bendPoints[0].X, _bendPoints[0].Y);
+        _segments.Add(firstSegment);
+        
+        // Middle segments: between bend points
+        for (int i = 0; i < _bendPoints.Count - 1; i++)
         {
-            var bendPoint1 = _bendPoints[0];
-            var bendPoint2 = _bendPoints[1];
-            
-            // Update segments based on bend point positions
-            // Note: Constraints are now applied in real-time during drag operations
-            _segments[0].UpdatePoints(StartX, StartY, bendPoint1.X, bendPoint1.Y);
-            _segments[1].UpdatePoints(bendPoint1.X, bendPoint1.Y, bendPoint2.X, bendPoint2.Y);
-            _segments[2].UpdatePoints(bendPoint2.X, bendPoint2.Y, EndX, EndY);
+            var segment = new WireSegment(
+                _bendPoints[i].X, _bendPoints[i].Y,
+                _bendPoints[i + 1].X, _bendPoints[i + 1].Y);
+            _segments.Add(segment);
         }
+        
+        // Last segment: last bend point to end
+        var lastBend = _bendPoints[_bendPoints.Count - 1];
+        var lastSegment = new WireSegment(lastBend.X, lastBend.Y, EndX, EndY);
+        _segments.Add(lastSegment);
+        
+        System.Diagnostics.Debug.WriteLine($"Recalculated {_segments.Count} segments for {_bendPoints.Count} bend points");
     }
     
 }

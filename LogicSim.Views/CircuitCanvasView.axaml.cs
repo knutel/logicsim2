@@ -221,6 +221,25 @@ public partial class CircuitCanvasView : UserControl
                 }
             };
             
+            // Add double-click handler to add bend points
+            line.PointerPressed += (s, e) => {
+                if (e.ClickCount == 2)
+                {
+                    OnWireSegmentDoubleClick(wireViewModel, segment, e);
+                    e.Handled = true;
+                }
+            };
+            
+            // Add hover effects
+            line.PointerEntered += (s, e) => {
+                line.StrokeThickness = 3; // Thicken on hover
+                line.Cursor = new Cursor(StandardCursorType.Hand);
+            };
+            
+            line.PointerExited += (s, e) => {
+                line.StrokeThickness = 2; // Return to normal
+            };
+            
             // Add segment line at the beginning so it renders behind gates
             CircuitCanvas.Children.Insert(0, line);
         }
@@ -493,6 +512,14 @@ public partial class CircuitCanvasView : UserControl
     {
         if (sender is Ellipse circle && circle.Tag is BendPointTag tag)
         {
+            // Check for double-click to remove bend point
+            if (e.ClickCount == 2 && tag.WireViewModel != null && tag.BendPoint != null)
+            {
+                tag.WireViewModel.RemoveBendPoint(tag.BendPoint);
+                e.Handled = true;
+                return;
+            }
+            
             _draggedBendPoint = tag.BendPoint;
             if (_draggedBendPoint != null)
             {
@@ -554,6 +581,25 @@ public partial class CircuitCanvasView : UserControl
         {
             tag.BendPoint.IsHovered = false;
         }
+    }
+    
+    private void OnWireSegmentDoubleClick(WireViewModel wire, WireSegment segment, PointerPressedEventArgs e)
+    {
+        var point = e.GetPosition(CircuitCanvas);
+        
+        // Find which segment index this is
+        int segmentIndex = wire.Segments.IndexOf(segment);
+        if (segmentIndex == -1) return;
+        
+        // Determine where to insert the bend point
+        // For segment 0: insert after index -1 (will become first bend point)
+        // For segment N: insert after bend point N-1
+        int insertAfter = segmentIndex - 1;
+        
+        System.Diagnostics.Debug.WriteLine($"Double-clicked segment {segmentIndex} at ({point.X:F0}, {point.Y:F0}), inserting after bend point {insertAfter}");
+        
+        // Add the bend point
+        wire.AddBendPoint(point.X, point.Y, insertAfter);
     }
     
 }
