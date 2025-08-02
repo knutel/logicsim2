@@ -3,25 +3,32 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:vm="using:LogicSim.ViewModels"
+             xmlns:controls="using:LogicSim.Views.Controls"
              mc:Ignorable="d" d:DesignWidth="100" d:DesignHeight="60"
              x:Class="LogicSim.Views.Controls.GateView"
              x:DataType="vm:GateViewModel">
     
-    <Border Background="#2D3142"
-            BorderBrush="#4F5D75"
-            BorderThickness="2"
-            CornerRadius="5"
-            Width="80"
-            Height="50"
-            Cursor="Hand">
+    <Canvas Width="120" Height="60">
+        <!-- Gate Body -->
+        <Border Canvas.Left="10" Canvas.Top="5"
+                Background="#2D3142"
+                BorderBrush="#4F5D75"
+                BorderThickness="2"
+                CornerRadius="5"
+                Width="80"
+                Height="50"
+                Cursor="Hand">
+            
+            <Grid>
+                <TextBlock Text="{Binding Type}"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Foreground="White"
+                           FontWeight="Bold"
+                           FontSize="14"/>
+            </Grid>
+        </Border>
         
-        <Grid>
-            <TextBlock Text="{Binding Type}"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       Foreground="White"
-                       FontWeight="Bold"
-                       FontSize="14"/>
-        </Grid>
-    </Border>
+        <!-- Pins will be added manually in code-behind -->
+    </Canvas>
 </UserControl>

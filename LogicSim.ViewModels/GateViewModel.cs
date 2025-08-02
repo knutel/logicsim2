@@ -1,5 +1,6 @@
 using ReactiveUI;
 using LogicSim.Core.Models.Gates;
+using System.Collections.ObjectModel;
 
 namespace LogicSim.ViewModels;
 
@@ -11,12 +12,28 @@ public class GateViewModel : ViewModelBase
     private bool _isDragging;
     private double _dragOffsetX;
     private double _dragOffsetY;
+    private ObservableCollection<PinViewModel> _inputPins;
+    private ObservableCollection<PinViewModel> _outputPins;
     
     public GateViewModel(LogicGate gate)
     {
         _gate = gate;
         _x = gate.X;
         _y = gate.Y;
+        
+        // Initialize pin collections
+        _inputPins = new ObservableCollection<PinViewModel>(
+            gate.InputPins.Select(pin => new PinViewModel(pin))
+        );
+        
+        _outputPins = new ObservableCollection<PinViewModel>(
+            gate.OutputPins.Select(pin => new PinViewModel(pin))
+        );
+        
+        // Debug output
+        System.Diagnostics.Debug.WriteLine($"GateViewModel created for {gate.Type}: InputPins={InputPins.Count}, OutputPins={OutputPins.Count}");
+        
+        UpdatePinPositions();
     }
     
     public LogicGate Gate => _gate;
@@ -25,6 +42,18 @@ public class GateViewModel : ViewModelBase
     
     public string Name => _gate.Name;
     
+    public ObservableCollection<PinViewModel> InputPins
+    {
+        get => _inputPins;
+        set => this.RaiseAndSetIfChanged(ref _inputPins, value);
+    }
+    
+    public ObservableCollection<PinViewModel> OutputPins
+    {
+        get => _outputPins;
+        set => this.RaiseAndSetIfChanged(ref _outputPins, value);
+    }
+    
     public double X
     {
         get => _x;
@@ -32,6 +61,7 @@ public class GateViewModel : ViewModelBase
         {
             this.RaiseAndSetIfChanged(ref _x, value);
             _gate.X = value;
+            UpdatePinPositions();
         }
     }
     
@@ -42,6 +72,7 @@ public class GateViewModel : ViewModelBase
         {
             this.RaiseAndSetIfChanged(ref _y, value);
             _gate.Y = value;
+            UpdatePinPositions();
         }
     }
     
@@ -82,5 +113,27 @@ public class GateViewModel : ViewModelBase
     public void EndDrag()
     {
         IsDragging = false;
+    }
+    
+    private void UpdatePinPositions()
+    {
+        _gate.UpdatePinPositions();
+        
+        // Update pin ViewModels with new positions
+        for (int i = 0; i < InputPins.Count; i++)
+        {
+            var pinVm = InputPins[i];
+            var pin = _gate.InputPins[i];
+            pinVm.X = pin.X;
+            pinVm.Y = pin.Y;
+        }
+        
+        for (int i = 0; i < OutputPins.Count; i++)
+        {
+            var pinVm = OutputPins[i];
+            var pin = _gate.OutputPins[i];
+            pinVm.X = pin.X;
+            pinVm.Y = pin.Y;
+        }
     }
 }
