@@ -1,0 +1,46 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:LogicSim.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="LogicSim.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="LogicSim"
+        Width="800" Height="450">
+    
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Header -->
+        <Border Grid.Row="0" Background="{DynamicResource SystemControlBackgroundAccentBrush}" 
+                Padding="20">
+            <TextBlock Text="{Binding Greeting}" 
+                       FontSize="24" 
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"
+                       Foreground="White"/>
+        </Border>
+        
+        <!-- Main Content Area -->
+        <Grid Grid.Row="1" Margin="20">
+            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Spacing="20">
+                <TextBlock Text="Welcome to LogicSim" 
+                           FontSize="18" 
+                           HorizontalAlignment="Center"/>
+                <TextBlock Text="A digital logic simulator built with Avalonia and MVVM" 
+                           HorizontalAlignment="Center"
+                           Opacity="0.7"/>
+                <Button Command="{Binding TestCommand}" 
+                        HorizontalAlignment="Center"
+                        Padding="20,10">
+                    <TextBlock Text="Test Button"/>
+                </Button>
+            </StackPanel>
+        </Grid>
+        
+        <!-- Status Bar -->
+        <Border Grid.Row="2" Background="{DynamicResource SystemControlBackgroundListLowBrush}" 
+                Padding="10,5">
+            <TextBlock Text="Ready" FontSize="12" Opacity="0.7"/>
+        </Border>
+    </Grid>
+</Window>
